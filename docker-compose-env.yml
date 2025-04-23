@@ -5,6 +5,9 @@ version: "3"
 
 services:
   # jaeger 链路追踪 — Jaeger for tracing
+  # 分布式追踪系统，用于监控微服务架构中的请求链路
+  # 追踪请求跨多个服务的调用路径、耗时、错误。可视化依赖关系和性能瓶颈。
+  # 典型场景：诊断微服务延迟问题（如 HTTP/gRPC 调用链）
   jaeger:
     image: jaegertracing/all-in-one:1.63.0
     container_name: jaeger
@@ -27,6 +30,9 @@ services:
       - looklook_net
 
   # prometheus 监控 — Prometheus for monitoring
+  # 开源的 时间序列数据库 和监控系统。
+  # 采集、存储指标数据（如 CPU、内存、请求量）。支持灵活的查询语言（PromQL）和告警规则。
+  # 监控容器化应用（常与 Kubernetes 集成）。
   prometheus:
     image: prom/prometheus:v2.28.1
     container_name: prometheus
@@ -47,6 +53,10 @@ services:
       - looklook_net
 
   # 查看 prometheus 监控数据 - Grafana to view Prometheus monitoring data
+  # 通用的可视化仪表盘工具，支持多种数据源。
+  # 通过图表展示 Prometheus、Elasticsearch、Jaeger 等数据。
+  # 支持自定义告警和团队协作。
+  # 典型场景：统一展示指标（Prometheus）、日志（Elasticsearch）、追踪（Jaeger）。
   grafana:
     image: grafana/grafana:8.0.6
     container_name: grafana
@@ -81,6 +91,10 @@ services:
     networks:
       - looklook_net
 
+  # 数据可视化与分析平台，专为 Elasticsearch 设计。
+  # 通过图表、仪表盘展示 Elasticsearch 中的日志、指标等数据。
+  # 支持全文搜索、聚合分析。
+  # 典型场景：与 Filebeat 或 Logstash 配合，实现日志分析（如 ELK Stack）。
   kibana:
     container_name: kibana
     image: kibana:8.12.2
@@ -97,7 +111,11 @@ services:
     depends_on:
       - elasticsearch
 
-  #消费 kafka 中 filebeat 收集的数据输出到 es - The data output collected by FileBeat in Kafka is output to ES
+  # 消费 kafka 中 filebeat 收集的数据输出到 es - The data output collected by FileBeat in Kafka is output to ES
+  # 高性能的日志处理工具（通常用于替代 Logstash）
+  # 过滤、转换、转发日志数据到 Elasticsearch 等存储。
+  # 资源占用低，适合高吞吐场景。
+  # 典型场景：处理 Filebeat 收集的日志后写入 Elasticsearch。
   go-stash:
     image: kevinwan/go-stash:1.1.1
     container_name: go-stash
@@ -114,6 +132,10 @@ services:
       - kafka
 
   # 收集业务数据 - Collect business data
+  # 轻量级日志采集器，属于 Elastic Stack
+  # 监控文件（如日志文件）、实时转发到 Logstash/Elasticsearch
+  # 支持压缩、加密和简单过滤。
+  # 替代 Logstash 实现低资源占用的日志收集。
   filebeat:
     image: elastic/filebeat:8.12.2
     container_name: filebeat
