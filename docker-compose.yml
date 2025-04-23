@@ -1,29 +1,38 @@
-version: '3'
+version: "3"
 
-######## app下api+rpc ,  Before starting this project, start the environment that the project depends on docker-compose-env.yml #######
+######## app 下 api+rpc ,  Before starting this project, start the environment that the project depends on docker-compose-env.yml #######
 
 services:
-
-  #前端网关nginx-gateay (只代理looklook，admin-api不在这里做代理)
+  # 服务名称 - Service name
+  # 前端网关 nginx-gateay (只代理 looklook，admin-api 不在这里做代理)
   # Front-end gateway nginx-gateway (Only agent looklook，admin-api Do not be an agent here)
   nginx-gateway:
+    # 镜像的名称
     image: nginx:1.21.5
+    # 自定义服务名称 - Service name
     container_name: nginx-gateway
+    # 设置容器总是自动重启（无论退出状态如何）
     restart: always
+    # 给予容器特权模式（拥有主机上的 root 权限）
     privileged: true
+    # 可选，环境变量 相当于 docker run 里的 --env -- 设置时区为上海
     environment:
       - TZ=Asia/Shanghai
+    # 可选，相当于 docker run 里的 -p -- 将主机的 8888 端口映射到容器的 8081 端口
     ports:
       - 8888:8081
+    # 可选，相当于 docker run 里的 -v -- 将主机的 ./deploy/nginx/conf.d 目录挂载到容器的 /etc/nginx/conf.d 目录
     volumes:
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d
       - ./data/nginx/log:/var/log/nginx
+    # 可选，相当于 docker run 里的 --network -- 将容器连接到名为 looklook_net 的 Docker 网络
     networks:
       - looklook_net
+    # 指定该服务依赖于名为 looklook 的服务（会在 looklook 服务启动后启动）
     depends_on:
       - looklook
 
-  #前端api + 业务rpc - Front-end API + business RPC
+  #前端 api + 业务 rpc - Front-end API + business RPC
   looklook:
     # docker-hub : https://hub.docker.com/r/lyumikael/gomodd
     # dockerfile: https://github.com/Mikaelemmmm/gomodd , If you are macOs m1\m2 use dockerfile yourself to build the image
@@ -33,7 +42,9 @@ services:
       # 时区上海 - Timezone Shanghai
       TZ: Asia/Shanghai
       GOPROXY: https://goproxy.cn,direct
+    # 设置容器内的工作目录为 /go/looklook
     working_dir: /go/looklook
+    # 将当前目录 (.) 挂载到容器的 /go/looklook 目录（实现代码热加载）
     volumes:
       - .:/go/looklook
     privileged: true
@@ -41,10 +52,14 @@ services:
     networks:
       - looklook_net
 
+# 可选，相当于 docker network create
 networks:
+  # 网络名称，供其他服务引用（如前面的 nginx-gateway 和 looklook 服务）
   looklook_net:
+    # 使用 Docker 的默认桥接（bridge）网络驱动
     driver: bridge
+    # IP 地址管理（IP Address Management）配置
     ipam:
       config:
+        # 指定该网络的子网范围（172.20.0.0 ~ 172.20.255.255）
         - subnet: 172.20.0.0/16
-
